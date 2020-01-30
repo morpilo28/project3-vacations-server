@@ -5,9 +5,8 @@ const jwt = require('jsonwebtoken');
 const multer = require('multer');
 const path = require('path');
 const app = express();
-var http = require('http').createServer(app);
-var io = require('socket.io')(http);
-/* const upload = multer(); */
+const http = require('http').createServer(app);
+const io = require('socket.io')(http);
 
 const vacationBl = require('./routing/vacations-bl');
 const usersBl = require('./routing/users-bl');
