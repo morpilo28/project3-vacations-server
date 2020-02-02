@@ -14,7 +14,7 @@ const PORT = 3201;
 const cors = require('cors');
 const SECRET_KEY_FOR_JWT = '687d6f87sd6f87sd6f78sd6f87sd';
 
-app.use('/images', express.static(path.join(__dirname, 'images')));
+app.use('/static', express.static(path.join(__dirname, 'images')));
 app.use(bodyParser.json());
 app.use(cors());
 
@@ -38,7 +38,7 @@ app.use((req, res, next) => {
         register: req.method === 'POST' && req.path === '/register',
         login: req.method === 'POST' && req.path === '/login',
         upload: req.method === 'POST' && req.path === '/uploadImages',
-        imgSrc: req.method === 'GET' && (req.path.indexOf('images') > -1)
+        imgSrc: req.method === 'GET' && (req.path.indexOf('static') > -1)
     };
 
     if (allowed.register || allowed.login || allowed.client || allowed.upload || allowed.imgSrc) {
