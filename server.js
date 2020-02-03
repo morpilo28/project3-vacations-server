@@ -14,7 +14,7 @@ const PORT = 3201;
 const cors = require('cors');
 const SECRET_KEY_FOR_JWT = '687d6f87sd6f87sd6f78sd6f87sd';
 
-app.use('/static', express.static(path.join(__dirname, 'images')));
+app.use('/images', express.static(path.join(__dirname, '/images')));
 app.use(bodyParser.json());
 app.use(cors());
 
@@ -38,7 +38,7 @@ app.use((req, res, next) => {
         register: req.method === 'POST' && req.path === '/register',
         login: req.method === 'POST' && req.path === '/login',
         upload: req.method === 'POST' && req.path === '/uploadImages',
-        imgSrc: req.method === 'GET' && (req.path.indexOf('static') > -1)
+        imgSrc: req.method === 'GET' && (req.path.indexOf('images') > -1)
     };
 
     if (allowed.register || allowed.login || allowed.client || allowed.upload || allowed.imgSrc) {
@@ -61,7 +61,8 @@ app.use((req, res, next) => {
 var upload = multer({
     storage: multer.diskStorage({
         destination: function (req, file, callback) { callback(null, path.join(__dirname, 'images')); },
-        filename: function (req, file, callback) { callback(null, path.parse(file.originalname).name + '-' + Date.now() + path.extname(file.originalname)); }
+        filename: function (req, file, callback) { callback(null, file.originalname); }
+        //filename: function (req, file, callback) { callback(null, path.parse(file.originalname).name + '-' + Date.now() + path.extname(file.originalname)); }
     }),
     fileFilter: function (req, file, callback) { isFileTypeImg(file, callback) }
 }).single('imgFile');
