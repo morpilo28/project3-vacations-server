@@ -61,8 +61,7 @@ app.use((req, res, next) => {
 var upload = multer({
     storage: multer.diskStorage({
         destination: function (req, file, callback) { callback(null, path.join(__dirname, 'images')); },
-        filename: function (req, file, callback) { callback(null, file.originalname); }
-        //filename: function (req, file, callback) { callback(null, path.parse(file.originalname).name + '-' + Date.now() + path.extname(file.originalname)); }
+        filename: function (req, file, callback) { callback(null, path.parse(file.originalname).name + '-' + Date.now() + path.extname(file.originalname)); }
     }),
     fileFilter: function (req, file, callback) { isFileTypeImg(file, callback) }
 }).single('imgFile');
@@ -212,21 +211,14 @@ app.post('/follow', function (req, res) {
 });
 
 app.post('/uploadImg', upload, (req, res) => {
-    /* res.setHeader("Access-Control-Allow-Origin", "*"); */
     upload(req, res, (e) => {
         if (e) {
-            console.log('the error is: ' + e);
             return res.status(500).end('problem with uploading img');
         } else {
-            console.log(req.file);
-            return res.end('done');
+            return res.send(req.file.filename);
         }
     })
 })
-
-/* app.get('/images', (req, res) => {
-    console.log('hhjgkljh;k');
-}); */
 
 io.on('connection', function (socket) {
     console.log('a user connected');
