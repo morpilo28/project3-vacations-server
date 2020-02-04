@@ -6,12 +6,20 @@ const followTable = 'follow_vacation';
 
 function getVacations(userId, callback, isForChart) {
     userId = Number(userId);
-    let query = isForChart === 'true' ? `select * from ${vacationTable} where followers != 0` : `select * from ${vacationTable} order by id`;
+    let queryToGetArrayForChart = `select * from ${vacationTable} where followers != 0`;
+    let queryToGetVacationsList = `select * from ${vacationTable} order by id`;
+    let query = (isForChart === 'true') ? queryToGetArrayForChart : queryToGetVacationsList;
     dal.readAll(query, (err, allVacations) => {
-        allVacations = adjustVacationFormat(allVacations);
         if (err) {
             callback(err);
         } else {
+            let expiredVacations = getExpiredVacations(allVacations);
+
+            for (let i = 0; i < expiredVacations.length; i++) {
+                deleteExpiredVacationsFromAllVacationsArray(allVacations, expiredVacations, i);
+                deleteExpiredVacationFromDb(expiredVacations[i].id, userId, callback);
+            }
+            allVacations = adjustVacationFormat(allVacations);
             if (isForChart === 'true') {
                 callback(null, allVacations);
             } else {
@@ -35,6 +43,34 @@ function getVacations(userId, callback, isForChart) {
     });
 }
 
+function deleteExpiredVacationFromDb(expiredVacationId, userId, callback) {
+    deleteVacation(expiredVacationId, userId, (err) => {
+        if (err) {
+            callback(err);
+        }
+        else {
+            console.log('deleted');
+        }
+    });
+}
+
+function deleteExpiredVacationsFromAllVacationsArray(allVacations, expiredVacations, i) {
+    let expiredVacationIndex = allVacations.map((vacation) => vacation.id).indexOf(expiredVacations[i].id);
+    allVacations.splice(expiredVacationIndex, 1);
+}
+
+function getExpiredVacations(allVacations) {
+    let expiredVacations = [];
+    let today = new Date().setHours(0, 0, 0, 0);
+    allVacations.forEach(vacation => {
+        let vacationToDate = vacation.toDate.setHours(0, 0, 0, 0);
+        if (vacationToDate < today) {
+            expiredVacations.push(vacation);
+        }
+    });
+    return expiredVacations;
+}
+
 function getSingleVacation(id, callback) {
     dal.readOne(`select * from ${vacationTable} where id = ${id}`, (err, singleVacationData) => {
         singleVacationData = adjustVacationFormat(singleVacationData);
@@ -51,7 +87,7 @@ function createVacation(vacationToADD, callback) {
     //TODO: make insert img possible
     vacationToADD.price = Number(vacationToADD.price);
     vacationToADD = new vacationModel.Vacation(null, vacationToADD.description, vacationToADD.destination, vacationToADD.image, vacationToADD.fromDate, vacationToADD.toDate, vacationToADD.price, vacationToADD.followers);
-    const {description, destination, image, fromDate, toDate, price, followers} = vacationToADD;
+    const { description, destination, image, fromDate, toDate, price, followers } = vacationToADD;
 
     dal.readAll(`select * from ${vacationTable} order by id`, (err, allVacations) => {
         allVacations = adjustVacationFormat(allVacations);
@@ -86,7 +122,7 @@ function updateVacation(editedVacationData, callback) {
         editedVacationData.fromDate = setDate(new Date(editedVacationData.fromDate), true);
         editedVacationData.toDate = setDate(new Date(editedVacationData.toDate), true);
         editedVacationData = new vacationModel.Vacation(editedVacationData.id, editedVacationData.description, editedVacationData.destination, editedVacationData.image, editedVacationData.fromDate, editedVacationData.toDate, editedVacationData.price, editedVacationData.followers);
-        const {id, description, destination, image, fromDate, toDate, price, followers} = editedVacationData;
+        const { id, description, destination, image, fromDate, toDate, price, followers } = editedVacationData;
         query = `update ${vacationTable} set id=${id},description='${description}',destination='${destination}',image='${image}',fromDate='${fromDate}',toDate='${toDate}',price=${price},followers=${followers} WHERE id = ${id};`;
     } else {
         if (editedVacationData.reduceOrAdd && editedVacationData.reduceOrAdd === 'add') {
