@@ -62,7 +62,7 @@ function createUserTypeObj(allUsers) {
 }
 
 function checkIfFollowed(followObjToAdd, callback) {
-    followObjToAdd = modalFollowObj(followObjToAdd);
+    followObjToAdd = modelFollowObj(followObjToAdd);
     dal.readAll(`select * from ${followTable} where vacation_id = ${followObjToAdd.vacationId} && user_id = ${followObjToAdd.userId};`, (e, data) => {
         if (data.length !== 0) {
             dal.deleteOne(`delete from ${followTable} where user_id = ${followObjToAdd.userId} and vacation_id = ${followObjToAdd.vacationId}`, (e) => {
@@ -92,7 +92,7 @@ function checkIfFollowed(followObjToAdd, callback) {
     })
 }
 
-function modalFollowObj(followObjToAdd) {
+function modelFollowObj(followObjToAdd) {
     followObjToAdd.userId = Number(followObjToAdd.userId);
     followObjToAdd.vacationId = Number(followObjToAdd.vacationId);
     followObjToAdd = new followModel.Follow(followObjToAdd.userId, followObjToAdd.vacationId);
