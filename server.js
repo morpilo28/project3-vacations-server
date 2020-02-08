@@ -152,6 +152,7 @@ app.delete('/vacations/:id', (req, res) => {
             return res.status(500).send();
         } else {
             io.emit('DELETE_VACATION', { id: vacationId });
+            return res.end();
         }
     })
 });
