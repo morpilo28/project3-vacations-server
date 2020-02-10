@@ -116,6 +116,8 @@ function createVacation(vacationToADD, callback) {
 
 function updateVacation(editedVacationData, callback) {
     editedVacationData.id = Number(editedVacationData.id);
+    editedVacationData.price = Number(editedVacationData.price);
+    editedVacationData.followers = Number(editedVacationData.followers);
     let query = '';
     if (editedVacationData.destination) {
         //TODO: check why sometime invalid dates when updating followers
