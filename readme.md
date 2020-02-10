@@ -28,7 +28,7 @@ Create a new database called 'travel' in phpmyadmin and import the 'travel.sql' 
   ```
 
    ### User
-#### You can view all past signed users in the 'users' table in the database or you can register as a new user.
+#### You can view all past signed users at the 'users' table in the database or you can register as a new user.
 
 user example:
 
@@ -38,6 +38,14 @@ user example:
   ```
 
   ## Project hirarchi
+
+client.js |<--(socket.io)--> Node.js |--> MySQL Database
+					     |
+					     |--> server.js |--> routing
+									      |
+									      |--> users-bl.js		|
+									      |					|--> dal.js 
+									      |--> vacations-bl.js		|
 
 
 
