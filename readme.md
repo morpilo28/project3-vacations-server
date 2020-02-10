@@ -39,13 +39,7 @@ user example:
 
   ## Project hirarchi
 
-client.js |<--(socket.io)--> Node.js |--> MySQL Database
-					     |
-					     |--> server.js |--> routing
-									      |
-									      |--> users-bl.js		|
-									      |					|--> dal.js 
-									      |--> vacations-bl.js		|
+client.js <--(socket.io)--> Node.js (server.js --> routing(users-bl, vacations-bl)--> dal.js) --> MySQL Database
 
 
 
