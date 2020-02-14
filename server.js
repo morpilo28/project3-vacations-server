@@ -146,8 +146,9 @@ app.put('/vacations/:id', (req, res) => {
 app.delete('/vacations/:id', (req, res) => {
     const vacationId = req.body.id;
     const userId = req.body.userId;
+    const imageName = req.body.imageName;
 
-    vacationBl.deleteVacation(vacationId, userId, (e) => {
+    vacationBl.deleteVacation(vacationId, userId, imageName, (e) => {
         if (e) {
             return res.status(500).send();
         } else {

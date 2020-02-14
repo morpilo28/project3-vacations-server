@@ -172,7 +172,7 @@ function dalUpdateVacation(query, callback, editedVacationData) {
     });
 }
 
-function deleteVacation(vacationId, userId, callback) {
+function deleteVacation(vacationId, userId, imageName, callback) {
     vacationId = Number(vacationId);
     userId = Number(userId);
     dal.readAll(`select * from ${followTable} where vacation_id = ${vacationId};`, (e, data) => {
@@ -191,6 +191,7 @@ function deleteVacation(vacationId, userId, callback) {
                                 callback(e);
                             } else {
                                 callback(null);
+                                deleteImageFromFolder(imageName);
                             }
                         })
                     }
@@ -202,6 +203,7 @@ function deleteVacation(vacationId, userId, callback) {
                         callback(e);
                     } else {
                         callback(null);
+                        deleteImageFromFolder(imageName);
                     }
                 })
             }
@@ -283,15 +285,7 @@ function isVacationAlreadyExists(allVacations, fromDate, toDate, vacationToADD, 
         let destinationToAdd = strToLowerCase(vacationToADD.destination);
         if (destinationFromDb === destinationToAdd && vacationsFromDb.fromDate === fromDate && vacationsFromDb.toDate === toDate && vacationsFromDb.price === vacationToADD.price) {
             if (isImageAdded) {
-                let ImageToDelete = (`${path}/images/${vacationToADD.image}`);
-                fs.unlink(ImageToDelete, (e) => {
-                    console.log(ImageToDelete);
-                    if (e) {
-                        console.log(e);
-                    } else {
-                        console.log('file deleted from folder');
-                    }
-                })
+                deleteImageFromFolder(vacationToADD.image);
                 return vacationsFromDb;
             } else {
                 return vacationsFromDb;
@@ -299,6 +293,19 @@ function isVacationAlreadyExists(allVacations, fromDate, toDate, vacationToADD, 
         }
     }
     return false;
+}
+
+function deleteImageFromFolder(imageName) {
+    let ImageToDelete = (`${path}/images/${imageName}`);
+    fs.unlink(ImageToDelete, (e) => {
+        console.log(ImageToDelete);
+        if (e) {
+            console.log(e);
+        }
+        else {
+            console.log('image deleted from folder');
+        }
+    });
 }
 
 function adjustVacationFormat(vacations) {
