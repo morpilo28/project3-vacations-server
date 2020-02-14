@@ -80,7 +80,6 @@ function getSingleVacation(id, callback) {
         if (err) {
             callback(err);
         } else {
-            //returns an obj
             callback(null, singleVacationData[0]);
         }
     })
@@ -142,7 +141,7 @@ function updateVacation(editedVacationData, callback) {
             } else {
                 let vacation = getVacationIfExists(allVacations, editedVacationData, wasImageAdded, originalObjToEdit);
                 if (vacation) {
-                    callback(400); //vacation already exist
+                    callback(400); 
                 } else {
                     dalUpdateVacation(query, callback, editedVacationData);
                 }
