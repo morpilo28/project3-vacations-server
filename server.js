@@ -135,7 +135,7 @@ app.put('/vacations/:id', (req, res) => {
     const editedVacationData = req.body;
     vacationBl.updateVacation(editedVacationData, (e, updatedVacation) => {
         if (e) {
-            return res.status(500).send();
+            return res.status(e).send();
         } else {
             io.emit('EDIT_VACATION', updatedVacation);
             return res.send();

@@ -97,7 +97,7 @@ function createVacation(vacationToADD, callback) {
         if (err) {
             callback(err);
         } else {
-            let vacation = getVacationIfExists(allVacations, vacationToADD);
+            let vacation = getVacationIfExists(allVacations, vacationToADD, true);
             if (vacation) {
                 callback(400);
             } else {
@@ -117,10 +117,17 @@ function createVacation(vacationToADD, callback) {
 }
 
 function updateVacation(editedVacationData, callback) {
-    editedVacationData.id = Number(editedVacationData.id);
+    editedVacationData.id = Number(editedVacationData.id); //TODO: maybe change to number in the model section
     editedVacationData.price = Number(editedVacationData.price);
     editedVacationData.followers = Number(editedVacationData.followers);
     let query = '';
+    let wasImageAdded = editedVacationData.imageWasAdded ? true : false;
+    let originalObjToEdit = editedVacationData.originalObjToEdit ? editedVacationData.originalObjToEdit : null;
+    if (originalObjToEdit) {
+        let originalObjToEdit = editedVacationData.originalObjToEdit;
+        originalObjToEdit.price = Number(originalObjToEdit.price);
+        originalObjToEdit = new vacationModel.Vacation(originalObjToEdit.id, originalObjToEdit.description, originalObjToEdit.destination, originalObjToEdit.image, originalObjToEdit.fromDate, originalObjToEdit.toDate, originalObjToEdit.price, originalObjToEdit.followers);
+    }
     if (editedVacationData.destination) {
         //TODO: check why sometime invalid dates when updating followers
         editedVacationData.fromDate = setDate(new Date(editedVacationData.fromDate), true);
@@ -128,23 +135,41 @@ function updateVacation(editedVacationData, callback) {
         editedVacationData = new vacationModel.Vacation(editedVacationData.id, editedVacationData.description, editedVacationData.destination, editedVacationData.image, editedVacationData.fromDate, editedVacationData.toDate, editedVacationData.price, editedVacationData.followers);
         const { id, description, destination, image, fromDate, toDate, price, followers } = editedVacationData;
         query = `update ${vacationTable} set id=${id},description='${description}',destination='${destination}',image='${image}',fromDate='${fromDate}',toDate='${toDate}',price=${price},followers=${followers} WHERE id = ${id};`;
+        dal.readAll(`select * from ${vacationTable} order by id`, (err, allVacations) => {
+            allVacations = adjustVacationFormat(allVacations);
+            if (err) {
+                callback(err);
+            } else {
+                let vacation = getVacationIfExists(allVacations, editedVacationData, wasImageAdded, originalObjToEdit);
+                if (vacation) {
+                    callback(400); //vacation already exist
+                } else {
+                    dalUpdateVacation(query, callback, editedVacationData);
+                }
+            }
+        })
     } else {
         if (editedVacationData.reduceOrAdd && editedVacationData.reduceOrAdd === 'add') {
             query = `UPDATE ${vacationTable} SET followers = followers+1 WHERE vacation.id = ${editedVacationData.id};`;
         } else if (editedVacationData.reduceOrAdd && editedVacationData.reduceOrAdd === 'reduce') {
             query = `UPDATE ${vacationTable} SET followers = followers-1 WHERE vacation.id = ${editedVacationData.id};`;
         } else {
-            console.log(editedVacationData);
+            console.log(editedVacationData); //TODO: delete line?!
         }
-    }
 
+        dalUpdateVacation(query, callback, editedVacationData)
+    }
+}
+
+function dalUpdateVacation(query, callback, editedVacationData) {
     dal.updateOne(query, (err) => {
         if (err) {
-            callback(err);
-        } else {
+            callback(500);
+        }
+        else {
             getSingleVacation(editedVacationData.id, callback);
         }
-    })
+    });
 }
 
 function deleteVacation(vacationId, userId, callback) {
@@ -233,24 +258,44 @@ function setDate(date, isFromUpdate) {
     return dateFormatted;
 }
 
-function getVacationIfExists(allVacations, vacationToADD) {
+function getVacationIfExists(allVacations, vacationToADD, isImageAdded, originalObjToEdit) {
     let fromDate = setDate(new Date(vacationToADD.fromDate));
     let toDate = setDate(new Date(vacationToADD.toDate));
+    if (originalObjToEdit) {
+        let originalDestination = strToLowerCase(originalObjToEdit.destination);
+        let destinationToAdd = strToLowerCase(vacationToADD.destination);
+        if (originalDestination === destinationToAdd && originalObjToEdit.fromDate === fromDate && originalObjToEdit.toDate === toDate && originalObjToEdit.price === vacationToADD.price) {
+            console.log('original vacation');
+            return false;
+        } else {
+            console.log('not original vacation');
+            return isVacationAlreadyExists(allVacations, fromDate, toDate, vacationToADD, isImageAdded);
+        }
+    } else {
+        return isVacationAlreadyExists(allVacations, fromDate, toDate, vacationToADD, isImageAdded);
+    }
+}
+
+function isVacationAlreadyExists(allVacations, fromDate, toDate, vacationToADD, isImageAdded) {
     for (let i = 0; i < allVacations.length; i++) {
         const vacationsFromDb = allVacations[i];
         let destinationFromDb = strToLowerCase(vacationsFromDb.destination);
         let destinationToAdd = strToLowerCase(vacationToADD.destination);
         if (destinationFromDb === destinationToAdd && vacationsFromDb.fromDate === fromDate && vacationsFromDb.toDate === toDate && vacationsFromDb.price === vacationToADD.price) {
-            let ImageToDelete =(`${path}/images/${vacationToADD.image}`);
-            fs.unlink(ImageToDelete, (e) => {
-                console.log(ImageToDelete);
-                if (e) {
-                    console.log(e);
-                } else {
-                    console.log('file deleted from folder'); 
-                }
-            })
-            return vacationsFromDb;
+            if (isImageAdded) {
+                let ImageToDelete = (`${path}/images/${vacationToADD.image}`);
+                fs.unlink(ImageToDelete, (e) => {
+                    console.log(ImageToDelete);
+                    if (e) {
+                        console.log(e);
+                    } else {
+                        console.log('file deleted from folder');
+                    }
+                })
+                return vacationsFromDb;
+            } else {
+                return vacationsFromDb;
+            }
         }
     }
     return false;
