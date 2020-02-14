@@ -216,6 +216,7 @@ app.post('/uploadImg', upload, (req, res) => {
         if (e) {
             return res.status(500).end('problem with uploading img');
         } else {
+            console.log('image added: ' + req.file.filename);
             return res.send(req.file.filename);
         }
     })

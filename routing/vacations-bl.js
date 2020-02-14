@@ -3,6 +3,9 @@ const dal = require('../dal');
 const vacationModel = require('../models/vacation-model');
 const vacationTable = 'vacation';
 const followTable = 'follow_vacation';
+const fs = require('fs');
+const path = require('path').resolve(__dirname, '..');
+
 
 function getVacations(userId, callback, isForChart) {
     userId = Number(userId);
@@ -84,7 +87,6 @@ function getSingleVacation(id, callback) {
 }
 
 function createVacation(vacationToADD, callback) {
-    //TODO: make insert img possible
     vacationToADD.price = Number(vacationToADD.price);
     vacationToADD = new vacationModel.Vacation(null, vacationToADD.description, vacationToADD.destination, vacationToADD.image, vacationToADD.fromDate, vacationToADD.toDate, vacationToADD.price, vacationToADD.followers);
     const { description, destination, image, fromDate, toDate, price, followers } = vacationToADD;
@@ -236,8 +238,18 @@ function getVacationIfExists(allVacations, vacationToADD) {
     let toDate = setDate(new Date(vacationToADD.toDate));
     for (let i = 0; i < allVacations.length; i++) {
         const vacationsFromDb = allVacations[i];
-        const newVacation = vacationToADD;
-        if (vacationsFromDb.destination === newVacation.destination && vacationsFromDb.fromDate === fromDate && vacationsFromDb.toDate === toDate && vacationsFromDb.price === newVacation.price) {
+        let destinationFromDb = strToLowerCase(vacationsFromDb.destination);
+        let destinationToAdd = strToLowerCase(vacationToADD.destination);
+        if (destinationFromDb === destinationToAdd && vacationsFromDb.fromDate === fromDate && vacationsFromDb.toDate === toDate && vacationsFromDb.price === vacationToADD.price) {
+            let ImageToDelete =(`${path}/images/${vacationToADD.image}`);
+            fs.unlink(ImageToDelete, (e) => {
+                console.log(ImageToDelete);
+                if (e) {
+                    console.log(e);
+                } else {
+                    console.log('file deleted from folder'); 
+                }
+            })
             return vacationsFromDb;
         }
     }
@@ -260,3 +272,8 @@ module.exports = {
     updateVacation: updateVacation,
     deleteVacation: deleteVacation,
 };
+
+function strToLowerCase(str) {
+    str = str.toLowerCase();
+    return str;
+}
