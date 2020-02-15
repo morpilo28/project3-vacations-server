@@ -47,7 +47,7 @@ function getVacations(userId, callback, isForChart) {
 function createVacation(vacationToADD, callback) {
     vacationToADD.price = Number(vacationToADD.price);
     vacationToADD = new vacationModel.Vacation(null, vacationToADD.description, vacationToADD.destination, vacationToADD.image, vacationToADD.fromDate, vacationToADD.toDate, vacationToADD.price, vacationToADD.followers);
-    const { description, destination, image, fromDate, toDate, price, followers } = vacationToADD;
+    const {description, destination, image, fromDate, toDate, price, followers} = vacationToADD;
 
     dal.readAll(`select * from ${vacationTable} order by id`, (err, allVacations) => {
         allVacations = adjustVacationFormat(allVacations);
@@ -74,7 +74,7 @@ function createVacation(vacationToADD, callback) {
 }
 
 function updateVacation(editedVacationData, callback) {
-    editedVacationData.id = Number(editedVacationData.id); 
+    editedVacationData.id = Number(editedVacationData.id);
     editedVacationData.price = Number(editedVacationData.price);
     editedVacationData.followers = Number(editedVacationData.followers);
     let query = '';
@@ -90,7 +90,7 @@ function updateVacation(editedVacationData, callback) {
         editedVacationData.fromDate = setDate(new Date(editedVacationData.fromDate), true);
         editedVacationData.toDate = setDate(new Date(editedVacationData.toDate), true);
         editedVacationData = new vacationModel.Vacation(editedVacationData.id, editedVacationData.description, editedVacationData.destination, editedVacationData.image, editedVacationData.fromDate, editedVacationData.toDate, editedVacationData.price, editedVacationData.followers);
-        const { id, description, destination, image, fromDate, toDate, price, followers } = editedVacationData;
+        const {id, description, destination, image, fromDate, toDate, price, followers} = editedVacationData;
         query = `update ${vacationTable} set id=${id},description='${description}',destination='${destination}',image='${image}',fromDate='${fromDate}',toDate='${toDate}',price=${price},followers=${followers} WHERE id = ${id};`;
         dal.readAll(`select * from ${vacationTable} order by id`, (err, allVacations) => {
             allVacations = adjustVacationFormat(allVacations);
@@ -99,7 +99,7 @@ function updateVacation(editedVacationData, callback) {
             } else {
                 let vacation = getVacationIfExists(allVacations, editedVacationData, wasImageAdded, originalObjToEdit);
                 if (vacation) {
-                    callback(400); 
+                    callback(400);
                 } else {
                     dalUpdateVacation(query, callback, editedVacationData);
                 }
@@ -175,8 +175,7 @@ function deleteExpiredVacationFromDb(expiredVacationId, userId, callback) {
     deleteVacation(expiredVacationId, userId, (err) => {
         if (err) {
             callback(err);
-        }
-        else {
+        } else {
             console.log('deleted');
         }
     });
@@ -186,11 +185,21 @@ function dalUpdateVacation(query, callback, editedVacationData) {
     dal.updateOne(query, (err) => {
         if (err) {
             callback(500);
-        }
-        else {
+        } else {
             getSingleVacation(editedVacationData.id, callback);
         }
     });
+}
+
+function getSingleVacation(id, callback) {
+    dal.readOne(`select * from ${vacationTable} where id = ${id}`, (err, singleVacationData) => {
+        singleVacationData = adjustVacationFormat(singleVacationData);
+        if (err) {
+            callback(err);
+        } else {
+            callback(null, singleVacationData[0]);
+        }
+    })
 }
 
 function addUnFollowedVacationsToOrganizedArray(allVacations, organizedArray) {
@@ -283,8 +292,7 @@ function deleteImageFromFolder(imageName) {
         console.log(ImageToDelete);
         if (e) {
             console.log(e);
-        }
-        else {
+        } else {
             console.log('image deleted from folder');
         }
     });

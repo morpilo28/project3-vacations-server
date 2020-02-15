@@ -23,6 +23,16 @@ function readAll(query, callback) {
     });
 }
 
+function readOne(query, callback) {
+    connection.query(query, (err, result) => {
+        if (err) {
+            callback("can't get one from db");
+        } else {
+            callback(null, result);
+        }
+    });
+}
+
 function createOne(query1,query2, callback) {
     connection.query(query1, (err) => {
         if (err) {
