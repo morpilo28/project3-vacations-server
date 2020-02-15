@@ -79,34 +79,12 @@ app.get('/vacations', (req, res) => {
     }, forChart);
 });
 
-//TODO: is needed???
-/* app.get('/vacations/:id', (req, res) => {
-    const id = Number(req.params.id);
-    vacationBl.getVacations((e, allVacations) => {
-        if (e) {
-            return res.status(500).send();
-        } else {
-            vacationBl.getSingleVacation(id, (e, singleVacationData) => {
-                if (e) {
-                    return res.status(500).send();
-                } else {
-                    let responseObj = {
-                        singleVacationData: singleVacationData,
-                        allVacations: allVacations
-                    };
-                    return res.send(responseObj);
-                }
-            })
-        }
-    })
-}); */
-
 app.post('/vacations', (req, res) => {
     const vacationToAddObj = req.body;
     vacationBl.createVacation(vacationToAddObj, (e, vacation) => {
         if (e) {
             if (e === 400) {
-                return res.status(400).send();
+                return res.status(400).send('vacation already exist');
             } else {
                 return res.status(500).send(e);
             }
@@ -207,7 +185,7 @@ app.post('/uploadImg', upload, (req, res) => {
             return res.send(req.file.filename);
         }
     })
-})
+});
 
 io.on('connection', function (socket) {
     console.log('a user connected');

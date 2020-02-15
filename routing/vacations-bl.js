@@ -6,7 +6,6 @@ const followTable = 'follow_vacation';
 const fs = require('fs');
 const path = require('path').resolve(__dirname, '..');
 
-
 function getVacations(userId, callback, isForChart) {
     userId = Number(userId);
     let queryToGetArrayForChart = `select * from ${vacationTable} where followers != 0`;
@@ -17,7 +16,6 @@ function getVacations(userId, callback, isForChart) {
             callback(err);
         } else {
             let expiredVacations = getExpiredVacations(allVacations);
-
             for (let i = 0; i < expiredVacations.length; i++) {
                 deleteExpiredVacationsFromAllVacationsArray(allVacations, expiredVacations, i);
                 deleteExpiredVacationFromDb(expiredVacations[i].id, userId, callback);
@@ -46,17 +44,6 @@ function getVacations(userId, callback, isForChart) {
     });
 }
 
-function getSingleVacation(id, callback) {
-    dal.readOne(`select * from ${vacationTable} where id = ${id}`, (err, singleVacationData) => {
-        singleVacationData = adjustVacationFormat(singleVacationData);
-        if (err) {
-            callback(err);
-        } else {
-            callback(null, singleVacationData[0]);
-        }
-    })
-}
-
 function createVacation(vacationToADD, callback) {
     vacationToADD.price = Number(vacationToADD.price);
     vacationToADD = new vacationModel.Vacation(null, vacationToADD.description, vacationToADD.destination, vacationToADD.image, vacationToADD.fromDate, vacationToADD.toDate, vacationToADD.price, vacationToADD.followers);
@@ -64,7 +51,6 @@ function createVacation(vacationToADD, callback) {
 
     dal.readAll(`select * from ${vacationTable} order by id`, (err, allVacations) => {
         allVacations = adjustVacationFormat(allVacations);
-
         if (err) {
             callback(err);
         } else {
@@ -92,7 +78,8 @@ function updateVacation(editedVacationData, callback) {
     editedVacationData.price = Number(editedVacationData.price);
     editedVacationData.followers = Number(editedVacationData.followers);
     let query = '';
-    let wasImageAdded = editedVacationData.imageWasAdded ? true : false;
+    let wasImageAdded = !!editedVacationData.imageWasAdded;
+    console.log(wasImageAdded);
     let originalObjToEdit = editedVacationData.originalObjToEdit ? editedVacationData.originalObjToEdit : null;
     if (originalObjToEdit) {
         let originalObjToEdit = editedVacationData.originalObjToEdit;
@@ -100,7 +87,6 @@ function updateVacation(editedVacationData, callback) {
         originalObjToEdit = new vacationModel.Vacation(originalObjToEdit.id, originalObjToEdit.description, originalObjToEdit.destination, originalObjToEdit.image, originalObjToEdit.fromDate, originalObjToEdit.toDate, originalObjToEdit.price, originalObjToEdit.followers);
     }
     if (editedVacationData.destination) {
-        //TODO: check why sometime invalid dates when updating followers
         editedVacationData.fromDate = setDate(new Date(editedVacationData.fromDate), true);
         editedVacationData.toDate = setDate(new Date(editedVacationData.toDate), true);
         editedVacationData = new vacationModel.Vacation(editedVacationData.id, editedVacationData.description, editedVacationData.destination, editedVacationData.image, editedVacationData.fromDate, editedVacationData.toDate, editedVacationData.price, editedVacationData.followers);
@@ -124,8 +110,6 @@ function updateVacation(editedVacationData, callback) {
             query = `UPDATE ${vacationTable} SET followers = followers+1 WHERE vacation.id = ${editedVacationData.id};`;
         } else if (editedVacationData.reduceOrAdd && editedVacationData.reduceOrAdd === 'reduce') {
             query = `UPDATE ${vacationTable} SET followers = followers-1 WHERE vacation.id = ${editedVacationData.id};`;
-        } else {
-            console.log(editedVacationData); //TODO: delete line?!
         }
 
         dalUpdateVacation(query, callback, editedVacationData)
@@ -134,7 +118,6 @@ function updateVacation(editedVacationData, callback) {
 
 function deleteVacation(vacationId, userId, imageName, callback) {
     vacationId = Number(vacationId);
-    userId = Number(userId);
     dal.readAll(`select * from ${followTable} where vacation_id = ${vacationId};`, (e, data) => {
         if (e) {
             callback(e);
@@ -323,7 +306,6 @@ function strToLowerCase(str) {
 
 module.exports = {
     getVacations: getVacations,
-    getSingleVacation: getSingleVacation,
     createVacation: createVacation,
     updateVacation: updateVacation,
     deleteVacation: deleteVacation,

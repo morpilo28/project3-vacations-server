@@ -1,5 +1,4 @@
 "use strict";
-//TODO: find a way to open and close connection to mysql only when needed
 
 const mysql = require('mysql');
 const connection = mysql.createConnection({
@@ -17,18 +16,7 @@ connection.connect((err) => {
 function readAll(query, callback) {
     connection.query(query, (err, result) => {
         if (err) {
-            callback(err);
-        } else {
-            callback(null, result);
-        }
-    });
-
-}
-
-function readOne(query, callback) {
-    connection.query(query, (err, result) => {
-        if (err) {
-            callback(err);
+            callback("can't get all from db");
         } else {
             callback(null, result);
         }
@@ -38,7 +26,7 @@ function readOne(query, callback) {
 function createOne(query1,query2, callback) {
     connection.query(query1, (err) => {
         if (err) {
-            callback(err);
+            callback("can't add to db");
         } else {
             connection.query(query2, (err, result) => {
                 if (err) {
@@ -54,7 +42,7 @@ function createOne(query1,query2, callback) {
 function updateOne(query, callback) {
     connection.query(query, (err) => {
         if (err) {
-            callback(err);
+            callback("can't update to db");
         } else {
             callback(null);
         }
@@ -64,7 +52,7 @@ function updateOne(query, callback) {
 function deleteOne(query, callback) {
     connection.query(query, (err) => {
         if (err) {
-            callback(err);
+            callback("can't delete from db");
         } else {
             callback(null);
         }
