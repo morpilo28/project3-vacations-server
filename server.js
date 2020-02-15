@@ -7,7 +7,6 @@ const path = require('path');
 const app = express();
 const http = require('http').createServer(app);
 const io = require('socket.io')(http);
-
 const vacationBl = require('./routing/vacations-bl');
 const usersBl = require('./routing/users-bl');
 const PORT = 3201;
@@ -17,20 +16,6 @@ const SECRET_KEY_FOR_JWT = '687d6f87sd6f87sd6f78sd6f87sd';
 app.use('/images', express.static(path.join(__dirname, '/images')));
 app.use(bodyParser.json());
 app.use(cors());
-
-/* app.use((req, res, next) => {
-    console.log({
-        method: req.method,
-        path: req.path,
-        originalUrl: req.originalUrl,
-        body: req.body,
-        params: req.params,
-        query: req.query,
-        url: req.url,
-        dirName: path.join(__dirname, 'images')
-    })
-    next();
-}); */
 
 app.use((req, res, next) => {
     const allowed = {
@@ -94,7 +79,8 @@ app.get('/vacations', (req, res) => {
     }, forChart);
 });
 
-app.get('/vacations/:id', (req, res) => {
+//TODO: is needed???
+/* app.get('/vacations/:id', (req, res) => {
     const id = Number(req.params.id);
     vacationBl.getVacations((e, allVacations) => {
         if (e) {
@@ -113,7 +99,7 @@ app.get('/vacations/:id', (req, res) => {
             })
         }
     })
-});
+}); */
 
 app.post('/vacations', (req, res) => {
     const vacationToAddObj = req.body;

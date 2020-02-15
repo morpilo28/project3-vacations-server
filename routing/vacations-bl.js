@@ -46,34 +46,6 @@ function getVacations(userId, callback, isForChart) {
     });
 }
 
-function deleteExpiredVacationFromDb(expiredVacationId, userId, callback) {
-    deleteVacation(expiredVacationId, userId, (err) => {
-        if (err) {
-            callback(err);
-        }
-        else {
-            console.log('deleted');
-        }
-    });
-}
-
-function deleteExpiredVacationsFromAllVacationsArray(allVacations, expiredVacations, i) {
-    let expiredVacationIndex = allVacations.map((vacation) => vacation.id).indexOf(expiredVacations[i].id);
-    allVacations.splice(expiredVacationIndex, 1);
-}
-
-function getExpiredVacations(allVacations) {
-    let expiredVacations = [];
-    let today = new Date().setHours(0, 0, 0, 0);
-    allVacations.forEach(vacation => {
-        let vacationToDate = vacation.toDate.setHours(0, 0, 0, 0);
-        if (vacationToDate < today) {
-            expiredVacations.push(vacation);
-        }
-    });
-    return expiredVacations;
-}
-
 function getSingleVacation(id, callback) {
     dal.readOne(`select * from ${vacationTable} where id = ${id}`, (err, singleVacationData) => {
         singleVacationData = adjustVacationFormat(singleVacationData);
@@ -116,7 +88,7 @@ function createVacation(vacationToADD, callback) {
 }
 
 function updateVacation(editedVacationData, callback) {
-    editedVacationData.id = Number(editedVacationData.id); //TODO: maybe change to number in the model section
+    editedVacationData.id = Number(editedVacationData.id); 
     editedVacationData.price = Number(editedVacationData.price);
     editedVacationData.followers = Number(editedVacationData.followers);
     let query = '';
@@ -160,17 +132,6 @@ function updateVacation(editedVacationData, callback) {
     }
 }
 
-function dalUpdateVacation(query, callback, editedVacationData) {
-    dal.updateOne(query, (err) => {
-        if (err) {
-            callback(500);
-        }
-        else {
-            getSingleVacation(editedVacationData.id, callback);
-        }
-    });
-}
-
 function deleteVacation(vacationId, userId, imageName, callback) {
     vacationId = Number(vacationId);
     userId = Number(userId);
@@ -208,6 +169,45 @@ function deleteVacation(vacationId, userId, imageName, callback) {
             }
         }
     })
+}
+
+function getExpiredVacations(allVacations) {
+    let expiredVacations = [];
+    let today = new Date().setHours(0, 0, 0, 0);
+    allVacations.forEach(vacation => {
+        let vacationToDate = vacation.toDate.setHours(0, 0, 0, 0);
+        if (vacationToDate < today) {
+            expiredVacations.push(vacation);
+        }
+    });
+    return expiredVacations;
+}
+
+function deleteExpiredVacationsFromAllVacationsArray(allVacations, expiredVacations, i) {
+    let expiredVacationIndex = allVacations.map((vacation) => vacation.id).indexOf(expiredVacations[i].id);
+    allVacations.splice(expiredVacationIndex, 1);
+}
+
+function deleteExpiredVacationFromDb(expiredVacationId, userId, callback) {
+    deleteVacation(expiredVacationId, userId, (err) => {
+        if (err) {
+            callback(err);
+        }
+        else {
+            console.log('deleted');
+        }
+    });
+}
+
+function dalUpdateVacation(query, callback, editedVacationData) {
+    dal.updateOne(query, (err) => {
+        if (err) {
+            callback(500);
+        }
+        else {
+            getSingleVacation(editedVacationData.id, callback);
+        }
+    });
 }
 
 function addUnFollowedVacationsToOrganizedArray(allVacations, organizedArray) {
@@ -316,6 +316,11 @@ function adjustVacationFormat(vacations) {
     return vacations;
 }
 
+function strToLowerCase(str) {
+    str = str.toLowerCase();
+    return str;
+}
+
 module.exports = {
     getVacations: getVacations,
     getSingleVacation: getSingleVacation,
@@ -323,8 +328,3 @@ module.exports = {
     updateVacation: updateVacation,
     deleteVacation: deleteVacation,
 };
-
-function strToLowerCase(str) {
-    str = str.toLowerCase();
-    return str;
-}
