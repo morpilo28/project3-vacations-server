@@ -47,5 +47,3 @@ https://github.com/morpilo28/project3-vacations-client
 
 ### Server:
 https://github.com/morpilo28/project3-vacations-server
-
-
